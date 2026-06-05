@@ -361,7 +361,7 @@ async function scanRoute() {
 
   try {
     const res = await fetch(
-      `https://esi.evetech.net/latest/route/${originSys.id}/${destSys.id}/?flag=shortest`
+      `https://esi.evetech.net/latest/route/${originSys.id}/${destSys.id}/?flag=secure`
     );
     if (!res.ok) throw new Error('ESI route error');
     const routeIds = await res.json();
