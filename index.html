@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LBSS — Escort Request & Quote System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0e1a;color:#c8d0e0;min-height:100vh}
+.wrap{max-width:780px;margin:0 auto;padding:2rem 1.5rem}
+.header{text-align:center;margin-bottom:2rem;border-bottom:0.5px solid #1e3a5f;padding-bottom:1.5rem}
+.logo{font-size:11px;letter-spacing:3px;color:#4a7fa8;margin-bottom:6px}
+.title{font-size:24px;font-weight:500;color:#e8f0f8;margin-bottom:4px}
+.subtitle{font-size:13px;color:#5a7a9a}
+.badge{display:inline-block;font-size:10px;letter-spacing:2px;background:#0d2040;color:#3a8fd4;border:0.5px solid #1e4a7a;padding:3px 10px;border-radius:4px;margin-top:8px}
+.card{background:#0d1a2e;border:0.5px solid #1e3a5f;border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-label{font-size:10px;letter-spacing:2px;color:#3a7aaa;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.card-label::after{content:'';flex:1;height:0.5px;background:#1e3a5f}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field label{font-size:12px;color:#5a7a9a}
+.field input,.field select{background:#060e1c;border:0.5px solid #1e3a5f;border-radius:6px;padding:9px 12px;color:#c8d0e0;font-size:14px;font-family:inherit;outline:none;width:100%}
+.field input:focus,.field select:focus{border-color:#3a7aaa}
+.field input::placeholder{color:#2a4a6a}
+.field select option{background:#0d1a2e}
+.threat-panel{background:#060e1c;border:0.5px solid #1e3a5f;border-radius:8px;padding:1rem;min-height:80px}
+.threat-placeholder{font-size:13px;color:#2a4a6a;display:flex;align-items:center;gap:8px}
+.threat-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid #1a2e44}
+.threat-item:last-child{border-bottom:none}
+.threat-name{font-size:13px;color:#c8d0e0}
+.threat-score{font-size:11px;padding:2px 8px;border-radius:4px}
+.score-high{background:#1a0a0a;color:#e05555;border:0.5px solid #4a1515}
+.score-med{background:#1a120a;color:#d4853a;border:0.5px solid #4a2a0a}
+.score-low{background:#0a1a0a;color:#4aaa4a;border:0.5px solid #1a4a1a}
+.fleet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.fleet-card{background:#060e1c;border:0.5px solid #1e3a5f;border-radius:8px;padding:1rem;cursor:pointer;transition:border-color 0.2s}
+.fleet-card:hover{border-color:#3a7aaa}
+.fleet-card.selected{border-color:#3a8fd4;background:#0a1828}
+.fleet-type{font-size:10px;letter-spacing:2px;color:#3a7aaa;margin-bottom:4px}
+.fleet-name{font-size:13px;font-weight:500;color:#c8d0e0;margin-bottom:6px}
+.fleet-detail{font-size:11px;color:#4a6a8a;line-height:1.6}
+.fleet-price{font-size:12px;color:#3a8fd4;margin-top:8px}
+.quote-result{background:#060e1c;border:0.5px solid #1e3a5f;border-radius:8px;padding:1.25rem}
+.quote-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:0.5px solid #1a2e44;color:#5a7a9a}
+.quote-row span:last-child{color:#c8d0e0;font-weight:500}
+.quote-total{display:flex;justify-content:space-between;padding:14px 0 0;margin-top:4px}
+.quote-total-label{font-size:14px;color:#8aaac8}
+.quote-total-value{font-size:20px;font-weight:500;color:#3a8fd4}
+.escrow-note{font-size:11px;color:#3a6a8a;margin-top:10px;text-align:center}
+.btn{padding:10px 22px;background:#0d2a4a;border:0.5px solid #3a7aaa;border-radius:7px;color:#8ac8f0;font-size:13px;font-family:inherit;cursor:pointer;letter-spacing:1px;transition:background 0.2s}
+.btn:hover{background:#102040}
+.btn-full{width:100%;padding:13px;font-size:14px;margin-top:1.25rem}
+.step-indicator{display:flex;margin-bottom:1.5rem}
+.step{flex:1;text-align:center;font-size:10px;letter-spacing:1px;color:#2a4a6a;padding:8px 0;border-bottom:2px solid #1e3a5f}
+.step.active{color:#3a8fd4;border-bottom-color:#3a8fd4}
+.hint{font-size:11px;color:#2a4a6a;margin-top:8px}
+.scan-row{display:flex;justify-content:flex-end;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo">LBSS — LOGISTICS & SECURITY SOLUTIONS</div>
+    <div class="title">Escort Request & Quote System</div>
+    <div class="subtitle">Highsec Freight Protection · Adacyne Command</div>
+    <div class="badge">OPERATIONAL</div>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step active" id="step1">01 · ROUTE</div>
+    <div class="step" id="step2">02 · THREAT SCAN</div>
+    <div class="step" id="step3">03 · FLEET</div>
+    <div class="step" id="step4">04 · QUOTE</div>
+  </div>
+
+  <!-- CARD 1: Route & Cargo -->
+  <div class="card">
+    <div class="card-label">Route & Cargo</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Origin System</label>
+        <input type="text" id="origin" placeholder="e.g., Jita">
+      </div>
+      <div class="field">
+        <label>Destination System</label>
+        <input type="text" id="destination" placeholder="e.g., Amarr">
+      </div>
+    </div>
+    <div class="field">
+      <label>Cargo Value (ISK)</label>
+      <input type="number" id="cargo-value" placeholder="e.g., 5000000000" min="0">
+    </div>
+    <div class="hint">Minimum insurable value: 100,000,000 ISK</div>
+    <div class="scan-row">
+      <button class="btn" onclick="scanRoute()">Scan Route</button>
+    </div>
+  </div>
+
+  <!-- CARD 2: Threat Analysis -->
+  <div class="card">
+    <div class="card-label">Threat Analysis</div>
+    <div class="threat-panel" id="threat-panel">
+      <div class="threat-placeholder">
+        <span>◎</span>
+        Awaiting route scan — enter origin and destination above
+      </div>
+    </div>
+    <div class="hint" style="margin-top:10px">
+      Scans for low-sec systems, ganking hotspots (Uedama, Sivala, Madirmilire), and high-activity kill zones along the route
+    </div>
+  </div>
+
+  <!-- CARD 3: Fleet Selection -->
+  <div class="card">
+    <div class="card-label">Escort Fleet Selection</div>
+    <div class="fleet-grid">
+      <div class="fleet-card selected" id="fleet-a" onclick="selectFleet('a')">
+        <div class="fleet-type">TYPE A</div>
+        <div class="fleet-name">Standard</div>
+        <div class="fleet-detail">5 ships · Mixed squad<br>Vigil / Maulus core</div>
+        <div class="fleet-price">Base rate</div>
+      </div>
+      <div class="fleet-card" id="fleet-b" onclick="selectFleet('b')">
+        <div class="fleet-type">TYPE B</div>
+        <div class="fleet-name">Advanced</div>
+        <div class="fleet-detail">10 ships · Mixed + specialized<br>Enhanced ECM coverage</div>
+        <div class="fleet-price">+30% surcharge</div>
+      </div>
+      <div class="fleet-card" id="fleet-c" onclick="selectFleet('c')">
+        <div class="fleet-type">TYPE C</div>
+        <div class="fleet-name">VIP Aegis</div>
+        <div class="fleet-detail">15 ships · Full platoon<br>Priority SLA · 15s doctrine</div>
+        <div class="fleet-price">+70% surcharge</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.25rem">
+      <div class="field-row">
+        <div class="field">
+          <label>Escort zone — start system</label>
+          <input type="text" id="zone-start" placeholder="e.g., Ikao">
+        </div>
+        <div class="field">
+          <label>Escort zone — end system</label>
+          <input type="text" id="zone-end" placeholder="e.g., Ashab">
+        </div>
+      </div>
+      <div class="field">
+        <label>Number of jumps to escort</label>
+        <input type="number" id="jump-count" value="6" min="1" max="100" onchange="calcQuote()">
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 4: Quote Summary -->
+  <div class="card">
+    <div class="card-label">Quote Summary</div>
+    <div class="quote-result">
+      <div class="quote-row">
+        <span>Base protection fee (5% of cargo, min 100M ISK)</span>
+        <span id="q-base">— ISK</span>
+      </div>
+      <div class="quote-row">
+        <span>Distance surcharge (&gt; 6 jumps × 10M/jump)</span>
+        <span id="q-distance">— ISK</span>
+      </div>
+      <div class="quote-row">
+        <span>Fleet tier surcharge</span>
+        <span id="q-fleet">— ISK</span>
+      </div>
+      <div class="quote-total">
+        <span class="quote-total-label">Total estimated payment</span>
+        <span class="quote-total-value" id="q-total">— ISK</span>
+      </div>
+    </div>
+    <div class="escrow-note">Payment terms: 50% upfront escrow · 50% upon safe arrival · Corp wallet only</div>
+    <button class="btn btn-full" onclick="submitRequest()">Submit Escort Request</button>
+  </div>
+
+</div>
+
+<script>
+let selectedFleet = 'a';
+const fleetMultiplier = { a: 0, b: 0.30, c: 0.70 };
+
+function selectFleet(type) {
+  selectedFleet = type;
+  ['a','b','c'].forEach(t => {
+    document.getElementById('fleet-'+t).classList.toggle('selected', t === type);
+  });
+  calcQuote();
+}
+
+function formatISK(n) {
+  if (isNaN(n)) return '— ISK';
+  return Math.round(n).toLocaleString('en-US') + ' ISK';
+}
+
+function scanRoute() {
+  const origin = document.getElementById('origin').value.trim();
+  const dest = document.getElementById('destination').value.trim();
+  if (!origin || !dest) {
+    alert('Please enter both origin and destination systems.');
+    return;
+  }
+
+  // Placeholder threat data — will be replaced with ESI call later
+  const knownThreats = ['uedama','sivala','madirmilire','niarja','ahbazon','ikao','kaaputenen'];
+  const mockRoute = [origin, 'Perimeter', 'Urlen', 'Sivala', 'Ikao', 'Uedama', 'Kaaputenen', 'Madirmilire', 'Ashab', dest];
+
+  const threats = mockRoute.filter(s => knownThreats.includes(s.toLowerCase()));
+  const panel = document.getElementById('threat-panel');
+
+  if (threats.length === 0) {
+    panel.innerHTML = '<div style="font-size:13px;color:#4aaa4a;">&#10003; No major threats detected on this route</div>';
+  } else {
+    const threatHTML = threats.map(s => {
+      const isHigh = ['uedama','sivala','madirmilire','niarja'].includes(s.toLowerCase());
+      return `<div class="threat-item">
+        <span class="threat-name">${s}</span>
+        <span class="threat-score ${isHigh ? 'score-high' : 'score-med'}">${isHigh ? 'HIGH RISK' : 'ELEVATED'}</span>
+      </div>`;
+    }).join('');
+    panel.innerHTML = threatHTML;
+  }
+
+  document.getElementById('step2').classList.add('active');
+  document.getElementById('step3').classList.add('active');
+  calcQuote();
+}
+
+function calcQuote() {
+  const cargo = parseFloat(document.getElementById('cargo-value').value) || 0;
+  const jumps = parseInt(document.getElementById('jump-count').value) || 6;
+
+  const baseFee = Math.max(cargo * 0.05, 100000000);
+  const extraJumps = Math.max(0, jumps - 6);
+  const distanceSurcharge = extraJumps * 10000000;
+  const subtotal = baseFee + distanceSurcharge;
+  const fleetSurcharge = subtotal * fleetMultiplier[selectedFleet];
+  const total = subtotal + fleetSurcharge;
+
+  document.getElementById('q-base').textContent = formatISK(baseFee);
+  document.getElementById('q-distance').textContent = formatISK(distanceSurcharge);
+  document.getElementById('q-fleet').textContent = formatISK(fleetSurcharge);
+  document.getElementById('q-total').textContent = formatISK(total);
+  document.getElementById('step4').classList.add('active');
+}
+
+function submitRequest() {
+  const origin = document.getElementById('origin').value.trim();
+  const dest = document.getElementById('destination').value.trim();
+  const cargo = document.getElementById('cargo-value').value;
+  const jumps = document.getElementById('jump-count').value;
+  const total = document.getElementById('q-total').textContent;
+
+  if (!origin || !dest || !cargo) {
+    alert('Please fill in all required fields before submitting.');
+    return;
+  }
+  alert(`Escort request received.\n\nRoute: ${origin} → ${dest}\nJumps: ${jumps}\nFleet: Type ${selectedFleet.toUpperCase()}\nTotal: ${total}\n\nA logistics officer will contact you within 24 hours.`);
+}
+
+document.getElementById('cargo-value').addEventListener('input', calcQuote);
+</script>
+</body>
+</html>
